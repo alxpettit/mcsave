@@ -1,0 +1,11 @@
+[Unit]
+Description=Minecraft backup daemon
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+ExecStart=/opt/mcsave/main.py
+[Install]
+WantedBy=multi-user.target
+

@@ -6,7 +6,7 @@ from pathlib import Path
 
 class Snapshot:
     """ Generic base snapshot class, allowing us to switch between different snapshot methods"""
-    mc_server_instance_name: str = 'mc0'
+    # mc_server_instance_name: str = 'mc0'
     time_format = '%Y-%m-%d %H:%M:%S'
     logger = logging.getLogger(__name__)
 
@@ -14,6 +14,10 @@ class Snapshot:
     # this value will override get_default functions
     src: Path = None
     dst: Path = None
+
+    def get_snapshot_dir_name(self) -> str:
+        timestamp = datetime.datetime.now().strftime(self.time_format)
+        return timestamp
 
     # def get_default_src(self) -> Path:
     #     return Path(f'/dvol/{self.mc_server_instance_name}/world')
@@ -36,4 +40,4 @@ class Snapshot:
 class BasicSnapshot(Snapshot):
     def do_snapshot(self):
         # self.process_src_dst()
-        shutil.copytree(self.src, self.dst)
+        shutil.copytree(self.src, self.dst / self.get_snapshot_dir_name())

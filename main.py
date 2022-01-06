@@ -10,13 +10,15 @@ from pathlib import Path
 from threading import Thread
 import sys
 
+import pydantic as pydantic
+
 from minecraft_control import MinecraftSaveControl
 from snapshot import BasicSnapshot
 
 log_file_name: str = 'main.log'
 root_logger = logging.root
 root_logger.setLevel(logging.DEBUG)
-log_formatter = logging.Formatter("%(asctime)s:%(levelname)s %(message)s")
+log_formatter = logging.Formatter("%(asctime)s:%(levelname)s:%(threadName)-9s %(message)s")
 
 stream_handler: logging.StreamHandler = logging.StreamHandler(sys.stdout)
 stream_handler.setFormatter(log_formatter)
@@ -28,15 +30,21 @@ file_handler.setFormatter(log_formatter)
 file_handler.setLevel(logging.DEBUG)
 root_logger.addHandler(file_handler)
 
+class MCSaveConfig(pydantic.BaseModel):
+    src: Path
+    dst: Path
+    port: int
+
 class MCSaveThread(Thread):
     snap: BasicSnapshot
     ctrl: MinecraftSaveControl
     src: Path
     dst: Path
 
-    def __init__(self, port: int, src, dst):
+    def __init__(self, name, port: int, src, dst):
         super().__init__()
         self.logger = logging.getLogger(__name__)
+        self.name = name
         self.snap = BasicSnapshot()
         self.snap.src = Path(src)
         self.snap.dst = Path(dst)
@@ -93,9 +101,9 @@ def stop_request(mc: MCSaveThread):
 
 def main():
     threads = [
-        MCSaveThread(25575, '/var/lib/docker/volumes/mc0_mc0/_data/world',
+        MCSaveThread('mc0', 25575, '/var/lib/docker/volumes/mc0_mc0/_data/world',
                           '/var/lib/docker/volumes/mc0_mc0/_data/.snapshots'),
-        MCSaveThread(25577, '/dvol/mc2/world', '/dvol/mc2/.mc_snapshots/mc2')
+        MCSaveThread('mc2', 25577, '/dvol/mc2/world', '/dvol/mc2/.snapshots')
     ]
     for thread in threads:
         thread.start()

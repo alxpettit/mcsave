@@ -60,8 +60,8 @@ class MinecraftSaveControl:
         try:
             r = self.client.run(*args)
             return r
-        except AttributeError as e:
-            self.logger.debug("Could not run RCON command. Was .connect() skipped?", exc_info=e)
+        except Exception as e:
+            self.logger.debug("Could not run RCON command. Are we connected?", exc_info=e)
 
     def set_save(self, state: bool):
         if state:
